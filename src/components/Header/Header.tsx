@@ -141,13 +141,15 @@ export default function Header() {
                             onClick={() => setIsCartOpen(false)}
                             className="flex-shrink-0"
                           >
-                            <Image
-                              src={getVariantImage(item)}
-                              alt={item.title}
-                              width={64}
-                              height={64}
-                              className="rounded-md object-cover"
-                            />
+                            <div className="relative w-16 h-16">
+                              <Image
+                                src={getVariantImage(item)}
+                                alt={item.title}
+                                fill
+                                sizes="64px"
+                                className="rounded-md object-cover"
+                              />
+                            </div>
                           </Link>
                           <div className="flex-1">
                             <Link 

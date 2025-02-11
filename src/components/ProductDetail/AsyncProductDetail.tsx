@@ -5,42 +5,16 @@ import ProductDetail from './ProductDetail'
 import ProductTabs from './ProductTabs'
 import ProductDetailSkeleton from './ProductDetailSkeleton'
 import ProductTabsSkeleton from './ProductTabsSkeleton'
-import { useEffect, useState } from 'react'
-import { notFound } from 'next/navigation'
+import { useState } from 'react'
 import { Product } from '@/types/product'
 
 interface AsyncProductDetailProps {
   productId: string
+  initialProduct: Product
 }
 
-function ProductLoader({ productId }: AsyncProductDetailProps) {
-  const [product, setProduct] = useState<Product | null>(null)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    const loadProduct = async () => {
-      try {
-        const res = await fetch(`/api/products/${productId}`)
-        if (!res.ok) {
-          if (res.status === 404) {
-            notFound()
-          }
-          throw new Error('Failed to load product')
-        }
-        const data = await res.json()
-        setProduct(data)
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to load product'))
-        console.error('Error loading product:', err)
-      }
-    }
-
-    loadProduct()
-  }, [productId])
-
-  if (error) {
-    notFound()
-  }
+function ProductLoader({ initialProduct }: AsyncProductDetailProps) {
+  const [product] = useState<Product | null>(initialProduct)
 
   if (!product) {
     return (
@@ -59,7 +33,7 @@ function ProductLoader({ productId }: AsyncProductDetailProps) {
   )
 }
 
-export default function AsyncProductDetail({ productId }: AsyncProductDetailProps) {
+export default function AsyncProductDetail({ productId, initialProduct }: AsyncProductDetailProps) {
   return (
     <Suspense
       fallback={
@@ -69,7 +43,7 @@ export default function AsyncProductDetail({ productId }: AsyncProductDetailProp
         </>
       }
     >
-      <ProductLoader productId={productId} />
+      <ProductLoader productId={productId} initialProduct={initialProduct} />
     </Suspense>
   )
 } 

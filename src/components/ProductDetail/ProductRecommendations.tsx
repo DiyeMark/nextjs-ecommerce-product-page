@@ -85,6 +85,8 @@ export default function ProductRecommendations({ products }: ProductRecommendati
                 src={product.images[0]}
                 alt={product.title}
                 fill
+                priority
+                sizes="(max-width: 768px) 50vw, 25vw"
                 className="object-contain"
               />
               <button 

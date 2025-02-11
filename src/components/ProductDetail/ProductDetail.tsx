@@ -147,6 +147,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                             src={image}
                                             alt={`${product.title} in ${selectedColor} view ${index + 1}`}
                                             fill
+                                            priority
                                             sizes="80px"
                                             className="object-contain"
                                         />
@@ -174,13 +175,16 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     <div className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
-                                <Image
-                                    src={product.seller.imageUrl}
-                                    alt={`Avatar of ${product.seller.name}`}
-                                    width={48}
-                                    height={48}
-                                    className="rounded-full mr-3"
-                                />
+                                <div className="relative w-12 h-12">
+                                    <Image
+                                        src={product.seller.imageUrl}
+                                        alt={`Avatar of ${product.seller.name}`}
+                                        fill
+                                        sizes="48px"
+                                        priority
+                                        className="rounded-full object-cover mr-3"
+                                    />
+                                </div>
                                 <div>
                                     <h3 className="font-medium flex items-center">
                                         {product.seller.name}

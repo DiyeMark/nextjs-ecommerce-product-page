@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import AsyncProductRecommendations from '@/components/ProductDetail/AsyncProductRecommendations';
 import AsyncProductDetail from '@/components/ProductDetail/AsyncProductDetail';
 import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 interface ProductPageProps {
   params: {
@@ -57,10 +58,16 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return metadata;
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getProduct(params.id);
+  
+  if (!product) {
+    notFound();
+  }
+
   return (
     <main>
-      <AsyncProductDetail productId={params.id} />
+      <AsyncProductDetail productId={params.id} initialProduct={product} />
       <AsyncProductRecommendations productId={params.id} />
     </main>
   );
