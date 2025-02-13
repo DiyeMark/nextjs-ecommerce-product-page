@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { Product } from '@/types/product';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import {
     BadgeCheck,
     MapPin,
@@ -28,6 +29,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     const [activeImage, setActiveImage] = useState(0);
     const [quantity, setQuantity] = useState<string>('1');
     const addToCart = useCartStore((state) => state.addToCart);
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -175,14 +177,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     <div className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
-                                <div className="relative w-12 h-12">
+                                <div className="relative w-12 h-12 mr-3">
                                     <Image
                                         src={product.seller.imageUrl}
                                         alt={`Avatar of ${product.seller.name}`}
                                         fill
                                         sizes="48px"
                                         priority
-                                        className="rounded-full object-cover mr-3"
+                                        className="rounded-full object-cover"
                                     />
                                 </div>
                                 <div>
@@ -243,15 +245,35 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                             </div>
                             <div className="flex items-center gap-1.5 px-6">
                                 <div className="flex text-yellow-400">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`w-4 h-4 ${i < Math.floor(product.rating.average)
-                                                    ? 'text-yellow-400 fill-current'
-                                                    : 'text-gray-300'
+                                    {[...Array(5)].map((_, i) => {
+                                        const ratingValue = product.rating.average;
+                                        const isHalfStar = i < ratingValue && i + 1 > ratingValue;
+                                        const isFullStar = i < Math.floor(ratingValue);
+                                        
+                                        return (
+                                            <Star
+                                                key={i}
+                                                className={`w-4 h-4 ${
+                                                    isFullStar
+                                                        ? 'text-yellow-400 fill-current'
+                                                        : isHalfStar
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300'
                                                 }`}
-                                        />
-                                    ))}
+                                                fill={isHalfStar ? 'url(#half-fill)' : isFullStar ? 'currentColor' : 'none'}
+                                                stroke="currentColor"
+                                            >
+                                                {isHalfStar && (
+                                                    <defs>
+                                                        <linearGradient id="half-fill" x1="0" x2="1" y1="0" y2="0">
+                                                            <stop offset="50%" stopColor="currentColor" />
+                                                            <stop offset="50%" stopColor="transparent" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                )}
+                                            </Star>
+                                        );
+                                    })}
                                 </div>
                                 <span className="text-sm text-gray-600">
                                     {product.rating.average}
@@ -423,9 +445,26 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                 <MessageCircle className="w-5 h-5 mr-1" />
                                 Chat
                             </button>
-                            <button className="flex items-center text-gray-600 hover:text-gray-900">
-                                <Heart className="w-5 h-5 mr-1" />
-                                Wishlist
+                            <button 
+                                onClick={() => {
+                                    if (isInWishlist(product.id)) {
+                                        removeFromWishlist(product.id);
+                                        setToast({
+                                            message: 'Removed from wishlist',
+                                            type: 'success'
+                                        });
+                                    } else {
+                                        addToWishlist(product);
+                                        setToast({
+                                            message: 'Added to wishlist',
+                                            type: 'success'
+                                        });
+                                    }
+                                }}
+                                className="flex items-center text-gray-600 hover:text-gray-900"
+                            >
+                                <Heart className={`w-5 h-5 mr-1 ${isInWishlist(product.id) ? 'fill-black' : ''}`} />
+                                {isInWishlist(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
                             </button>
                             <button className="flex items-center text-gray-600 hover:text-gray-900">
                                 <Share2 className="w-5 h-5 mr-1" />

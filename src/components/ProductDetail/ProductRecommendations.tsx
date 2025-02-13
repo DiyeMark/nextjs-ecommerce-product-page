@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { Heart, ChevronLeft, ChevronRight, Star, ShoppingBag, ShoppingCart } from 'lucide-react';
 import Toast from '@/components/Toast/Toast';
 
@@ -14,6 +15,7 @@ interface ProductRecommendationsProps {
 
 export default function ProductRecommendations({ products }: ProductRecommendationsProps) {
   const addToCart = useCartStore((state) => state.addToCart);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const handleQuickAdd = async (e: React.MouseEvent, product: Product) => {
@@ -47,9 +49,28 @@ export default function ProductRecommendations({ products }: ProductRecommendati
     }
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent, product: Product) => {
     e.preventDefault(); // Prevent navigation when clicking the button
-    // Add to wishlist logic here
+    try {
+      if (isInWishlist(product.id)) {
+        await removeFromWishlist(product.id);
+        setToast({
+          message: 'Removed from wishlist',
+          type: 'success'
+        });
+      } else {
+        await addToWishlist(product);
+        setToast({
+          message: 'Added to wishlist',
+          type: 'success'
+        });
+      }
+    } catch (err) {
+      setToast({
+        message: err instanceof Error ? err.message : 'Failed to update wishlist',
+        type: 'error'
+      });
+    }
   };
 
   return (
@@ -90,11 +111,11 @@ export default function ProductRecommendations({ products }: ProductRecommendati
                 className="object-contain"
               />
               <button 
-                onClick={(e) => handleWishlist(e)}
+                onClick={(e) => handleWishlist(e, product)}
                 className="absolute top-3 right-3 p-1.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50"
-                aria-label="Add to wishlist"
+                aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
               >
-                <Heart className="w-4 h-4" />
+                <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-black' : ''}`} />
               </button>
             </div>
             <div className="space-y-2">
@@ -108,7 +129,30 @@ export default function ProductRecommendations({ products }: ProductRecommendati
               {/* Rating and Units Sold */}
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                  <Star 
+                    className={`w-4 h-4 ${
+                      product.rating.average >= 1
+                        ? 'text-yellow-400 fill-current'
+                        : product.rating.average >= 0.5
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
+                    }`}
+                    fill={product.rating.average >= 0.5 && product.rating.average < 1 
+                      ? 'url(#half-fill)' 
+                      : product.rating.average >= 1 
+                      ? 'currentColor' 
+                      : 'none'}
+                    stroke="currentColor"
+                  >
+                    {product.rating.average >= 0.5 && product.rating.average < 1 && (
+                      <defs>
+                        <linearGradient id="half-fill" x1="0" x2="1" y1="0" y2="0">
+                          <stop offset="50%" stopColor="currentColor" />
+                          <stop offset="50%" stopColor="transparent" />
+                        </linearGradient>
+                      </defs>
+                    )}
+                  </Star>
                   <span>{product.rating.average}</span>
                 </div>
                 <div className="flex items-center gap-1">

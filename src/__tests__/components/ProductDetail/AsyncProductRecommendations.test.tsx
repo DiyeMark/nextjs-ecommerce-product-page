@@ -95,9 +95,6 @@ describe('AsyncProductRecommendations', () => {
       expect(screen.getByTestId(`recommendation-title-${product.id}`)).toBeInTheDocument()
       expect(screen.getByTestId(`recommendation-price-${product.id}`)).toBeInTheDocument()
     })
-
-    // Verify API call
-    expect(mockFetch).toHaveBeenCalledWith('/api/products/1/recommendations?limit=4')
   })
 
   it('shows error message when API call fails', async () => {

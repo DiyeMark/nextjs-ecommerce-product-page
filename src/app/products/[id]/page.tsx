@@ -3,6 +3,9 @@ import AsyncProductRecommendations from '@/components/ProductDetail/AsyncProduct
 import AsyncProductDetail from '@/components/ProductDetail/AsyncProductDetail';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+// import { Suspense } from 'react';
+// import ProductDetailSkeleton from '@/components/ProductDetail/ProductDetailSkeleton';
+// import ProductTabsSkeleton from '@/components/ProductDetail/ProductTabsSkeleton';
 
 interface ProductPageProps {
   params: {
@@ -14,7 +17,7 @@ async function getProduct(id: string) {
   try {
     const headersList = headers();
     const host = headersList.get('host') || 'localhost:3000';
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'http';
     
     const res = await fetch(`${protocol}://${host}/api/products/${id}`, {
       cache: 'no-store'
@@ -59,6 +62,21 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  return (
+    <main>
+      {/* <Suspense fallback={
+        <>
+          <ProductDetailSkeleton />
+          <ProductTabsSkeleton />
+        </>
+      }> */}
+        <ProductContent params={params} />
+      {/* </Suspense> */}
+    </main>
+  );
+}
+
+async function ProductContent({ params }: ProductPageProps) {
   const product = await getProduct(params.id);
   
   if (!product) {
@@ -66,9 +84,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   return (
-    <main>
+    <>
       <AsyncProductDetail productId={params.id} initialProduct={product} />
       <AsyncProductRecommendations productId={params.id} />
-    </main>
+    </>
   );
 } 

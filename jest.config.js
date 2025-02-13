@@ -13,6 +13,12 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: ['**/__tests__/**/*.test.ts?(x)'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(lucide-react|@lucide)/)',
+  ],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx|mjs)$': ['babel-jest', { presets: ['next/babel'] }],
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

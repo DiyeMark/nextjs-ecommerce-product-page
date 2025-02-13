@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Product } from '@/types/product'
 import ProductRecommendations from './ProductRecommendations'
 import ProductRecommendationsSkeleton from './ProductRecommendationsSkeleton'
@@ -20,19 +20,26 @@ async function getRecommendations(productId: string): Promise<Product[]> {
 function ProductLoader({ productId }: AsyncProductRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<Product[]>([])
   const [error, setError] = useState<Error | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    setIsLoading(true)
     getRecommendations(productId)
       .then(setRecommendations)
       .catch(setError)
+      .finally(() => setIsLoading(false))
   }, [productId])
 
   if (error) {
     return (
-      <div className="text-red-500">
+      <div data-testid="recommendations-error" className="text-red-500">
         Error loading recommendations. Please try again later.
       </div>
     )
+  }
+
+  if (isLoading) {
+    return <ProductRecommendationsSkeleton />
   }
 
   if (recommendations.length === 0) {
@@ -43,9 +50,5 @@ function ProductLoader({ productId }: AsyncProductRecommendationsProps) {
 }
 
 export default function AsyncProductRecommendations({ productId }: AsyncProductRecommendationsProps) {
-  return (
-    <Suspense fallback={<ProductRecommendationsSkeleton />}>
-      <ProductLoader productId={productId} />
-    </Suspense>
-  )
+  return <ProductLoader productId={productId} />
 } 
